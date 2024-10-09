@@ -1,17 +1,15 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using FallShadow.Asset.Runtime;
 using UnityEngine.U2D;
 using UnityEngine.SceneManagement;
-using static UnityEditor.VersionControl.Asset;
-using System.Xml;
 using System;
 using FallShadow.Common;
 
 public class ResHelper : MonoBehaviour {
     public static ResHelper instance { get; private set; }
     public static AssetDB db { get; internal set; }
+    public static AssetDBAtlasSpriteLoader dbAtlasSpriteLoader { get; internal set; }
 
     [SerializeField]
     private RemoteConfig remoteConfig;
@@ -35,6 +33,7 @@ public class ResHelper : MonoBehaviour {
         if (!isInited) { return; }
 
         db?.Tick();
+        dbAtlasSpriteLoader?.Update();
 
         checkStateLoad();
         checkPreload();
@@ -44,9 +43,14 @@ public class ResHelper : MonoBehaviour {
         db?.UnMount(sandboxMountPath);
         db?.Dispose();
         db = null;
+
+        dbAtlasSpriteLoader?.Dispose();
     }
 
     public void Init() {
+        dbAtlasSpriteLoader = new AssetDBAtlasSpriteLoader();
+        dbAtlasSpriteLoader.Init();
+
         db = new AssetDB();
         db.Initialize(loadMode);
 
