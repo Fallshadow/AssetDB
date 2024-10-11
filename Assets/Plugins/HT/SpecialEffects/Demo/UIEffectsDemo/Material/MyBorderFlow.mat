@@ -29,10 +29,16 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _FlowBrightness: 0
-    - _FlowPos: 0.71970886
+    - _ColorMask: 15
+    - _FlowBrightness: 0.24736758
+    - _FlowPos: 0.24736758
     - _FlowThickness: 0.047
     - _FlowWidth: 1
+    - _Stencil: 0
+    - _StencilComp: 8
+    - _StencilOp: 0
+    - _StencilReadMask: 255
+    - _StencilWriteMask: 255
     - _UseUIAlphaClip: 0
     m_Colors:
     - _FlowColor: {r: 1, g: 0.9004276, b: 0, a: 1}
