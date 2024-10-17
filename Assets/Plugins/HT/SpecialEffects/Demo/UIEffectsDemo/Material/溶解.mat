@@ -34,7 +34,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Degree: 0.8615929
+    - _Degree: 0.5482516
     - _Mode: 1
     - _Softness: 1
     - _UseUIAlphaClip: 0

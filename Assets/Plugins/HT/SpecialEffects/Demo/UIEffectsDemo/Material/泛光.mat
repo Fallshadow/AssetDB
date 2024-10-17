@@ -34,7 +34,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _Intensity: 0.5
-    - _ThresholdValue: 0.51668406
+    - _ThresholdValue: 0.9646609
     - _UseUIAlphaClip: 0
     m_Colors:
     - _BloomColor: {r: 1, g: 0.62614304, b: 0, a: 1}

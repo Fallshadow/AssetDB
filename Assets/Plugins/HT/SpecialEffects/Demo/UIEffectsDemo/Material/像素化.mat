@@ -29,7 +29,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _PixelSize: 0.649462
+    - _PixelSize: 0.20367748
     - _UseUIAlphaClip: 0
     m_Colors: []
   m_BuildTextureStacks: []

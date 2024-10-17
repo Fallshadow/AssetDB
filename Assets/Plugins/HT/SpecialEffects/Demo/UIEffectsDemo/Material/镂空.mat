@@ -32,5 +32,5 @@ Material:
     - _Alpha: 0
     - _UseUIAlphaClip: 0
     m_Colors:
-    - _PiercedRect: {r: 0.649462, g: 0.649462, b: 0.3, a: 0.3}
+    - _PiercedRect: {r: 0.20367748, g: 0.20367748, b: 0.3, a: 0.3}
   m_BuildTextureStacks: []

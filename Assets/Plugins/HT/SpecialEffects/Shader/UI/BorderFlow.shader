@@ -44,7 +44,7 @@ Shader "HT.SpecialEffects/UI/BorderFlow"
 		ColorMask [_ColorMask]
 		//MASK SUPPORT END
 
-		Cull Off
+		Cull Back
 		Lighting Off
 		ZWrite Off
 		ZTest[unity_GUIZTestMode]
