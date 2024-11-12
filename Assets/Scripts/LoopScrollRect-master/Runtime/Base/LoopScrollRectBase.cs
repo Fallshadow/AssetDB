@@ -41,22 +41,7 @@ namespace UnityEngine.UI {
 
         
 
-        [SerializeField]
-        private RectTransform m_Viewport;
-        // 对viewport RectTransform的引用，它是 content RectTransform的父元素。
-        public RectTransform viewport { get { return m_Viewport; } set { m_Viewport = value; SetDirtyCaching(); } }
-
-        private RectTransform m_ViewRect;
-
-        protected RectTransform viewRect {
-            get {
-                if (m_ViewRect == null)
-                    m_ViewRect = m_Viewport;
-                if (m_ViewRect == null)
-                    m_ViewRect = (RectTransform)transform;
-                return m_ViewRect;
-            }
-        }
+        
 
         // ScrollRect使用的事件类型
         [Serializable]
@@ -72,7 +57,7 @@ namespace UnityEngine.UI {
         protected Vector2 m_ContentStartPosition = Vector2.zero;
 
         protected Bounds m_ContentBounds;
-        private Bounds m_ViewBounds;
+
 
         private Vector2 m_Velocity;
         // 内容的当前速度。The velocity is defined in units per second.
@@ -130,19 +115,15 @@ namespace UnityEngine.UI {
         protected override void OnEnable() {
             base.OnEnable();
 
-            if (m_HorizontalScrollbar)
-                m_HorizontalScrollbar.onValueChanged.AddListener(SetHorizontalNormalizedPosition);
-            if (m_VerticalScrollbar)
-                m_VerticalScrollbar.onValueChanged.AddListener(SetVerticalNormalizedPosition);
+            SetHorizontalScrollbarListener(true);
+            SetVerticalScrollbarListener(true);
 
             SetDirtyCaching();
         }
 
         protected override void OnDisable() {
-            if (m_HorizontalScrollbar)
-                m_HorizontalScrollbar.onValueChanged.RemoveListener(SetHorizontalNormalizedPosition);
-            if (m_VerticalScrollbar)
-                m_VerticalScrollbar.onValueChanged.RemoveListener(SetVerticalNormalizedPosition);
+            SetHorizontalScrollbarListener(false);
+            SetVerticalScrollbarListener(false);
 
             m_Dragging = false;
             m_Scrolling = false;
@@ -286,11 +267,7 @@ namespace UnityEngine.UI {
             return size;
         }
 
-        protected int deletedItemTypeStart = 0;
-        protected int deletedItemTypeEnd = 0;
-        protected abstract RectTransform GetFromTempPool(int itemIdx);
-        protected abstract void ReturnToTempPool(bool fromStart, int count = 1);
-        protected abstract void ClearTempPool();
+
 
 
 
@@ -563,23 +540,18 @@ namespace UnityEngine.UI {
         }
 
         /// <summary>
-        /// Calculate the bounds the ScrollRect should be using.
+        /// 计算ScrollRect应该使用的边界。
         /// </summary>
-        protected void UpdateBounds(bool updateItems = false) //==========LoopScrollRect==========
+        protected void UpdateBounds(bool updateItems = false)
         {
             m_ViewBounds = new Bounds(viewRect.rect.center, viewRect.rect.size);
             m_ContentBounds = GetBounds();
 
-            if (m_Content == null)
-                return;
-
-            // ============LoopScrollRect============
             // Don't do this in Rebuild. Make use of ContentBounds before Adjust here.
             if (Application.isPlaying && updateItems && UpdateItems(ref m_ViewBounds, ref m_ContentBounds)) {
                 EnsureLayoutHasRebuilt();
                 m_ContentBounds = GetBounds();
             }
-            // ============LoopScrollRect============
 
             Vector3 contentSize = m_ContentBounds.size;
             Vector3 contentPos = m_ContentBounds.center;
@@ -638,9 +610,9 @@ namespace UnityEngine.UI {
         }
 
         private readonly Vector3[] m_Corners = new Vector3[4];
+        // 获取 content 的四个角的世界坐标，转换到 viewRect 本地坐标下。
+        // 生成 content 在 viewRect 下的 Bounds
         private Bounds GetBounds() {
-            if (m_Content == null)
-                return new Bounds();
             m_Content.GetWorldCorners(m_Corners);
             var viewWorldToLocalMatrix = viewRect.worldToLocalMatrix;
             return InternalGetBounds(m_Corners, ref viewWorldToLocalMatrix);
@@ -663,9 +635,6 @@ namespace UnityEngine.UI {
 
         //==========LoopScrollRect==========
         private Bounds GetBounds4Item(int index) {
-            if (m_Content == null)
-                return new Bounds();
-
             int offset = index - itemTypeStart;
             if (offset < 0 || offset >= m_Content.childCount)
                 return new Bounds();

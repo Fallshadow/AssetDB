@@ -25,6 +25,7 @@ namespace UnityEngine.UI {
         private bool m_ContentSpaceInit = false;
         private float m_ContentSpacing = 0;
 
+        // 因为要么是垂直要么是水平，所以 grid 的 spacing 放到各自的 GetAbsDimension 去实现。
         protected float contentSpacing {
             get {
                 if (m_ContentSpaceInit) {
@@ -32,23 +33,22 @@ namespace UnityEngine.UI {
                 }
                 m_ContentSpaceInit = true;
                 m_ContentSpacing = 0;
-                if (m_Content != null) {
-                    HorizontalOrVerticalLayoutGroup layout1 = m_Content.GetComponent<HorizontalOrVerticalLayoutGroup>();
-                    if (layout1 != null) {
-                        m_ContentSpacing = layout1.spacing;
-                        m_ContentLeftPadding = layout1.padding.left;
-                        m_ContentRightPadding = layout1.padding.right;
-                        m_ContentTopPadding = layout1.padding.top;
-                        m_ContentBottomPadding = layout1.padding.bottom;
-                    }
-                    m_GridLayout = m_Content.GetComponent<GridLayoutGroup>();
-                    if (m_GridLayout != null) {
-                        m_ContentSpacing = GetAbsDimension(m_GridLayout.spacing);
-                        m_ContentLeftPadding = m_GridLayout.padding.left;
-                        m_ContentRightPadding = m_GridLayout.padding.right;
-                        m_ContentTopPadding = m_GridLayout.padding.top;
-                        m_ContentBottomPadding = m_GridLayout.padding.bottom;
-                    }
+
+                HorizontalOrVerticalLayoutGroup layout1 = m_Content.GetComponent<HorizontalOrVerticalLayoutGroup>();
+                if (layout1 != null) {
+                    m_ContentSpacing = layout1.spacing;
+                    m_ContentLeftPadding = layout1.padding.left;
+                    m_ContentRightPadding = layout1.padding.right;
+                    m_ContentTopPadding = layout1.padding.top;
+                    m_ContentBottomPadding = layout1.padding.bottom;
+                }
+                m_GridLayout = m_Content.GetComponent<GridLayoutGroup>();
+                if (m_GridLayout != null) {
+                    m_ContentSpacing = GetAbsDimension(m_GridLayout.spacing);
+                    m_ContentLeftPadding = m_GridLayout.padding.left;
+                    m_ContentRightPadding = m_GridLayout.padding.right;
+                    m_ContentTopPadding = m_GridLayout.padding.top;
+                    m_ContentBottomPadding = m_GridLayout.padding.bottom;
                 }
                 return m_ContentSpacing;
             }
@@ -63,14 +63,13 @@ namespace UnityEngine.UI {
                 }
                 m_ContentConstraintCountInit = true;
                 m_ContentConstraintCount = 1;
-                if (m_Content != null) {
-                    GridLayoutGroup layout2 = m_Content.GetComponent<GridLayoutGroup>();
-                    if (layout2 != null) {
-                        if (layout2.constraint == GridLayoutGroup.Constraint.Flexible) {
-                            Debug.LogError("[LoopScrollRect] Flexible not supported yet");
-                        }
-                        m_ContentConstraintCount = layout2.constraintCount;
+
+                GridLayoutGroup layout = m_Content.GetComponent<GridLayoutGroup>();
+                if (layout != null) {
+                    if (layout.constraint == GridLayoutGroup.Constraint.Flexible) {
+                        Debug.LogError("[LoopScrollRect] Flexible not supported yet");
                     }
+                    m_ContentConstraintCount = layout.constraintCount;
                 }
                 return m_ContentConstraintCount;
             }

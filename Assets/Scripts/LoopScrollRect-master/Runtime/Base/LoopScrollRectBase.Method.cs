@@ -25,22 +25,21 @@ namespace UnityEngine.UI {
 
 
         public void RefillCells(int startItem = 0, float contentOffset = 0) {
-            if (!Application.isPlaying)
-                return;
-
             itemTypeStart = reverseDirection ? totalCount - startItem : startItem;
+
+            // 有 Grid 情况下，一 行/列 不一定就一个，StartIndex 需要重新计算
             if (totalCount >= 0 && itemTypeStart % contentConstraintCount != 0) {
                 itemTypeStart = (itemTypeStart / contentConstraintCount) * contentConstraintCount;
             }
+
             itemTypeEnd = itemTypeStart;
 
-            // Don't `Canvas.ForceUpdateCanvases();` here, or it will new/delete cells to change itemTypeStart/End
+            // 不要在这里 Canvas.ForceUpdateCanvases(); 否则它会新建/删除单元格来更改 itemTypeStart/End
+            // 计算出需要放入临时池子的起始/终末 Index （转置时就是终末）
             ReturnToTempPool(reverseDirection, m_Content.childCount);
 
             float sizeToFill = GetAbsDimension(viewRect.rect.size) + Mathf.Abs(contentOffset);
             float sizeFilled = 0;
-            // m_ViewBounds may be not ready when RefillCells on Start
-
             float itemSize = 0;
 
             bool first = true;

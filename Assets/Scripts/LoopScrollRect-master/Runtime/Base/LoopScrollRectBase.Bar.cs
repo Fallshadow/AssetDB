@@ -9,11 +9,9 @@ namespace UnityEngine.UI {
                 return m_HorizontalScrollbar;
             }
             set {
-                if (m_HorizontalScrollbar)
-                    m_HorizontalScrollbar.onValueChanged.RemoveListener(SetHorizontalNormalizedPosition);
+                SetHorizontalScrollbarListener(false);
                 m_HorizontalScrollbar = value;
-                if (m_HorizontalScrollbar)
-                    m_HorizontalScrollbar.onValueChanged.AddListener(SetHorizontalNormalizedPosition);
+                SetHorizontalScrollbarListener(true);
                 SetDirtyCaching();
             }
         }
@@ -25,11 +23,9 @@ namespace UnityEngine.UI {
                 return m_VerticalScrollbar;
             }
             set {
-                if (m_VerticalScrollbar)
-                    m_VerticalScrollbar.onValueChanged.RemoveListener(SetVerticalNormalizedPosition);
+                SetVerticalScrollbarListener(false);
                 m_VerticalScrollbar = value;
-                if (m_VerticalScrollbar)
-                    m_VerticalScrollbar.onValueChanged.AddListener(SetVerticalNormalizedPosition);
+                SetVerticalScrollbarListener(true);
                 SetDirtyCaching();
             }
         }
@@ -213,14 +209,34 @@ namespace UnityEngine.UI {
                     newAnchoredPosition -= offset - value * (totalSize - m_ViewBounds.size.y) - m_ViewBounds.max.y;
                 }
             }
-            //==========LoopScrollRect==========
 
             Vector3 anchoredPosition = m_Content.anchoredPosition;
             if (Mathf.Abs(anchoredPosition[axis] - newAnchoredPosition) > 0.01f) {
                 anchoredPosition[axis] = newAnchoredPosition;
                 m_Content.anchoredPosition = anchoredPosition;
                 m_Velocity[axis] = 0;
-                UpdateBounds(true);	//==========LoopScrollRect==========
+                UpdateBounds(true);
+            }
+        }
+
+        private void SetHorizontalScrollbarListener(bool add) {
+            if (m_HorizontalScrollbar) {
+                if (add) {
+                    m_HorizontalScrollbar.onValueChanged.AddListener(SetHorizontalNormalizedPosition);
+                }
+                else {
+                    m_HorizontalScrollbar.onValueChanged.RemoveListener(SetHorizontalNormalizedPosition);
+                }
+            }
+        }
+        private void SetVerticalScrollbarListener(bool add) {
+            if (m_VerticalScrollbar) {
+                if (add) {
+                    m_VerticalScrollbar.onValueChanged.AddListener(SetVerticalNormalizedPosition);
+                }
+                else {
+                    m_VerticalScrollbar.onValueChanged.RemoveListener(SetVerticalNormalizedPosition);
+                }
             }
         }
 

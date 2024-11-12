@@ -7,6 +7,7 @@ namespace UnityEngine.UI
     {
         public static float GetPreferredHeight(RectTransform item)
         {
+            // 获取 ILayoutElement 指定大小
             ILayoutElement minLayoutElement;
             ILayoutElement preferredLayoutElement;
             var minHeight = LayoutUtility.GetLayoutProperty(item, e => e.minHeight, 0, out minLayoutElement);
