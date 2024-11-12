@@ -2,8 +2,21 @@ namespace UnityEngine.UI {
 
     public abstract partial class LoopScrollRectBase {
         public RectTransform content { get { return m_Content; } set { m_Content = value; } }
-        [SerializeField]
-        protected RectTransform m_Content;
+        [SerializeField] protected RectTransform m_Content;
+
+        public bool horizontal { get { return m_Horizontal; } set { m_Horizontal = value; } }
+        [SerializeField] private bool m_Horizontal = true;
+
+        public bool vertical { get { return m_Vertical; } set { m_Vertical = value; } }
+        [SerializeField] private bool m_Vertical = true;
+
+        protected enum LoopScrollRectDirection { Vertical, Horizontal }
+        protected LoopScrollRectDirection direction = LoopScrollRectDirection.Horizontal;
+
+        // 初始翻转 一开始的时候在最后面
+        [Tooltip("Reverse direction for dragging")]
+        public bool reverseDirection = false;
+
         protected float m_ContentLeftPadding = 0;
         protected float m_ContentRightPadding = 0;
         protected float m_ContentTopPadding = 0;

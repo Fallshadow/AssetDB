@@ -13,4 +13,7 @@ namespace UnityEngine.UI {
         // 将子物体返回池子时进行的操作
         void ReturnObject(Transform trans);
     }
+    public interface LoopScrollSizeHelper {
+        Vector2 GetItemsSize(int itemsCount);
+    }
 }
