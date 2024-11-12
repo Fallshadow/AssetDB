@@ -5,8 +5,8 @@ using FallShadow.Asset.Runtime;
 namespace FallShadow.Asset.Editor {
     public class MenuItems {
         private const string AssetDatabaseMenuPath = "Asset Tools/Debug/AssetDatabase Load Mode";
-        private static readonly string OpenAssetDatabaseLoad = $"¿ªÆô AssetDatabase Ä£Äâ£¨½ö Editor ÉúĞ§£©\n¿ÉÍ¨¹ı PlayerPrefs.GetInt(\"{AssetDBKey.AssetDatabasePrefKey}\") »ñÈ¡£¬¿ªÆôÎª 1";
-        private static readonly string CloseAssetDatabaseLoad = $"¹Ø±Õ AssetDatabase Ä£Äâ£¨½ö Editor ÉúĞ§£©\n¿ÉÍ¨¹ı PlayerPrefs.GetInt(\"{AssetDBKey.AssetDatabasePrefKey}\") »ñÈ¡£¬¹Ø±ÕÎª 0";
+        private static readonly string OpenAssetDatabaseLoad = $"å¼€å¯ AssetDatabase æ¨¡æ‹Ÿï¼ˆä»… Editor ç”Ÿæ•ˆï¼‰\nå¯é€šè¿‡ PlayerPrefs.GetInt(\"{AssetDBKey.AssetDatabasePrefKey}\") è·å–ï¼Œå¼€å¯ä¸º 1";
+        private static readonly string CloseAssetDatabaseLoad = $"å…³é—­ AssetDatabase æ¨¡æ‹Ÿï¼ˆä»… Editor ç”Ÿæ•ˆï¼‰\nå¯é€šè¿‡ PlayerPrefs.GetInt(\"{AssetDBKey.AssetDatabasePrefKey}\") è·å–ï¼Œå…³é—­ä¸º 0";
 
         [MenuItem(AssetDatabaseMenuPath)]
         private static void AssetDatabaseLoadMode() {
