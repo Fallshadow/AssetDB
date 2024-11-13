@@ -262,7 +262,5 @@ namespace FallShadow.Asset.Runtime {
             sceneTaskCount--;
             t--;
         }
-
-
     }
 }

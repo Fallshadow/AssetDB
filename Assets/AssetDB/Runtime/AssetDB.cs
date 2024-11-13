@@ -16,7 +16,7 @@ namespace FallShadow.Asset.Runtime {
 
     // 首先需要理解资源路径资源名称
     // Unity 环境下，资源放置在 Sandbox 下，file.txt 为资源清单。
-    // 
+    // 使用方法：files 文件清单先设置，然后设置标记，决定是否直接读取所有资源
     public partial class AssetDB {
 
         public enum LoadMode {
@@ -25,41 +25,15 @@ namespace FallShadow.Asset.Runtime {
         }
         private LoadMode loadMode;
 
-        private bool needInvokeGlobFiles;
 
-        // 资源加载路径  mount："d:/app/sandbox"
-        // 文件加载键   filekey: "arts/fonts/font1.bundle"
-        // 资源最终路径 filepath: "d:/app/sandbox/arts/fonts/font1.bundle"
-        // 打包出来后使用网络的路径
-        private NativeList<FixedString512Bytes> mounts;
-        // 远程资源路径
-        // 比如 {remoteConfig.remoteUrl}/StreamingAssets
-        // 即 https://funny-iaa.funnyrpg.com/InfiniteTrain/0.0.3/StreamingAssets
-        private FixedString512Bytes specialDirectory;
 
-        // 文件相对短路径和文件总路径之间的映射
-        private Dictionary<FixedString512Bytes, string> fileKey2FilePath;
 
-        // 目前需要申请的文件任务数量
-        private int requestFileTaskCount = 0;
-        // 加载远程或本地相当与 StreamingAssets 下的资源
-        private RequestFileTask[] requestFileTasks;
-        // file.txt 资源列表文件提取出来的资源信息
-        private NativeList<FixedString512Bytes> specialFilePaths;
-        // file.txt 资源列表文件中的资源路径都是带 32 位 hash 的，需要转换为不带 hash 的。
-        private NativeParallelHashMap<FixedString512Bytes, FixedString512Bytes> hash2normal;
-        // example 1:
-        // Key: "asset://samples/tps/arts/character/clips/chr_player_actor/clr_fall2idle.anim"
-        // value: AssetInfo.type = TaskType.BundleAsset AssetInfo.bundleKey = "samples/tps/arts/character/clips.bundle"  AssetInfo.assetPath = "chr_player_actor/clr_fall2idle.anim"
-        // example 2:
-        // Key: "asset://graphics/pipelines/forwardrenderer.asset"
-        // value: AssetInfo.type = TaskType.BundleAsset AssetInfo.bundleKey = "graphics/pipelines.bundle"  AssetInfo.assetPath = "forwardrenderer.asset"
-        // example 3:
-        // Key: "asset://graphics/pipelines.bundle"
-        // value: AssetInfo.type = TaskType.Bundle AssetInfo.bundleKey = "graphics/pipelines.bundle"
-        internal NativeHashMap<FixedString512Bytes, AssetInfo> url2AssetInfo;
-        // 一个 bundle 对应多个资源 Asset
-        private NativeParallelHashMap<FixedString512Bytes, NativeList<FixedString512Bytes>> bundleKey2Assets;
+
+
+
+
+
+
 
         // 文件扩展名对应资源类型 extension to AssetType
         // 比如 .prefab 对应 GameObject
@@ -88,8 +62,7 @@ namespace FallShadow.Asset.Runtime {
         private NativeHashMap<FixedString512Bytes, SceneInfo> url2SceneInfo;
         private Dictionary<int, FixedString32Bytes> handle2SceneName;
         private ushort releaseBundleCounter;
-        private NativeParallelHashMap<FixedString128Bytes, FixedString512Bytes> subSceneFileName2Path;
-        private NativeParallelHashMap<FixedString512Bytes, FixedString512Bytes> url2ContentCatalogPath;
+
 
 
 
@@ -119,18 +92,21 @@ namespace FallShadow.Asset.Runtime {
         private const int maxSceneTaskCount = 32;
         private const int maxSubSceneFileCount = 128;
         private const int maxSubSceneCatalogCount = 16;
-        private const int maxFileTaskCount = 4;
+
         private const int maxAssetCount = 4096;
 
 
 
-        public void Initialize(LoadMode mode = LoadMode.Runtime) {
+        public void Initialize(bool needLoadGlobFiles = true, LoadMode mode = LoadMode.Runtime) {
             loadMode = mode;
             if (loadMode == LoadMode.Editor) {
                 Debug.LogWarning("[AssetDB][Initialize] 编辑器模式，开启 AssetDatabase 模拟加载");
             }
+            else if (loadMode == LoadMode.Runtime) {
+                Debug.LogWarning("[AssetDB][Initialize] 运行模式，直接读取资源");
+            }
 
-            needInvokeGlobFiles = false;
+            this.needLoadGlobFiles = needLoadGlobFiles;
 
             mounts = new NativeList<FixedString512Bytes>(maxMountCount, Allocator.Persistent);
             fileKey2FilePath = new Dictionary<FixedString512Bytes, string>();
@@ -155,14 +131,10 @@ namespace FallShadow.Asset.Runtime {
             url2SceneInfo = new NativeHashMap<FixedString512Bytes, SceneInfo>(maxSceneTaskCount, Allocator.Persistent);
             handle2SceneName = new Dictionary<int, FixedString32Bytes>();
 
-            // sub scene
-            subSceneFileName2Path = new NativeParallelHashMap<FixedString128Bytes, FixedString512Bytes>(maxSubSceneFileCount, Allocator.Persistent);
-            url2ContentCatalogPath = new NativeParallelHashMap<FixedString512Bytes, FixedString512Bytes>(maxSubSceneCatalogCount, Allocator.Persistent);
+            InitEcsContainer();
 
             // files
-            requestFileTasks = new RequestFileTask[maxFileTaskCount];
-            specialFilePaths = new NativeList<FixedString512Bytes>(maxFileTaskCount, Allocator.Persistent);
-            specialDirectory = Application.streamingAssetsPath.Replace("\\", sep.ToString());
+            InitFileTask();
 
             // asset
             handleManager = new HandleManager<UAsset>(maxAssetCount);
@@ -170,7 +142,7 @@ namespace FallShadow.Asset.Runtime {
             url2AssetInfo = new NativeHashMap<FixedString512Bytes, AssetInfo>(maxAssetCount, Allocator.Persistent);
             bundleKey2Assets = new NativeParallelHashMap<FixedString512Bytes, NativeList<FixedString512Bytes>>(maxAssetCount, Allocator.Persistent);
             handle2AllAssetHandles = new NativeParallelHashMap<Handle<UAsset>, NativeList<Handle<UAsset>>>(maxAssetCount, Allocator.Persistent);
-            hash2normal = new NativeParallelHashMap<FixedString512Bytes, FixedString512Bytes>(maxAssetCount, Allocator.Persistent);
+            
             refCounts = new NativeArray<int>(maxAssetCount, Allocator.Persistent);
             index2Bundle = new Dictionary<int, AssetBundle>();
             assetCaches = new AssetCache[maxAssetCount];
@@ -203,71 +175,6 @@ namespace FallShadow.Asset.Runtime {
             }
         }
 
-        public void SetSpecialDirectory(FixedString512Bytes url) {
-            if (url.Length == 0) {
-                throw new Exception($"invalid url: {url}");
-            }
-
-            specialDirectory = url;
-        }
-
-        public void SetFilesUrl(FixedString512Bytes url) {
-            CreateRequestFileTask(url, FileType.Files);
-        }
-
-        // AssetDB 第一时间需要加载的资源
-        private void CreateRequestFileTask(FixedString512Bytes relativeFilePath, FileType type) {
-            requestFileTasks[requestFileTaskCount++] = new RequestFileTask {
-                type = type,
-                url = relativeFilePath
-            };
-        }
-
-        public void Mount(FixedString512Bytes dirPath) {
-            mounts.Add(FixedStringUtil.Replace(new FixedString512Bytes(dirPath), '\\', '/'));
-        }
-
-        public void UnMount(FixedString512Bytes dirPath) {
-            if (!mounts.IsCreated) return;
-
-            FixedString512Bytes unmount = FixedStringUtil.Replace(new FixedString512Bytes(dirPath), '\\', '/');
-            int index = mounts.IndexOf(unmount);
-
-            if (index == -1) return;
-
-            mounts.RemoveAt(index);
-
-            foreach (var kv in fileKey2FilePath) {
-                FixedString512Bytes fileKey = kv.Key;
-
-                if (fileKey.Length <= bundleSep.Length) {
-                    continue;
-                }
-
-                if (!kv.Value.StartsWith(unmount.ToString())) {
-                    continue;
-                }
-
-                if (!FixedStringUtil.Substring(fileKey, fileKey.Length - bundleSep.Length).Equals(bundleSep)) {
-                    ReleaseByUrl($"asset://{fileKey}", true);
-                    continue;
-                }
-
-                // 尝试将该 bundle 下的所有资源 Release
-                foreach (var kv1 in url2AssetInfo) {
-                    if (fileKey != kv1.Value.bundleKey) {
-                        continue;
-                    }
-
-                    ReleaseByUrl(kv1.Key, true);
-                }
-
-                if (bundleKey2Deps.TryGetValue(fileKey, out var deps)) {
-                    bundleKey2Deps.Remove(fileKey);
-                    deps.Dispose();
-                }
-            }
-        }
 
         public void Dispose() {
             if (bundleKey2Deps != null) {
@@ -323,15 +230,9 @@ namespace FallShadow.Asset.Runtime {
 
             bundleTasks = null;
             sceneTasks = null;
-            requestFileTasks = null;
+            
 
-            if (subSceneFileName2Path.IsCreated) {
-                subSceneFileName2Path.Dispose();
-            }
 
-            if (url2ContentCatalogPath.IsCreated) {
-                url2ContentCatalogPath.Dispose();
-            }
 
             if (index2Bundle != null) {
                 foreach (var bundle in index2Bundle.Values) {
@@ -354,17 +255,11 @@ namespace FallShadow.Asset.Runtime {
                 handle2AllAssetHandles.Dispose();
             }
 
-            if (hash2normal.IsCreated) {
-                hash2normal.Dispose();
-            }
 
             if (url2SceneInfo.IsCreated) {
                 url2SceneInfo.Dispose();
             }
 
-            if (specialFilePaths.IsCreated) {
-                specialFilePaths.Dispose();
-            }
 
             if (handleManager.IsCreated()) {
                 handleManager.Dispose();
@@ -378,6 +273,9 @@ namespace FallShadow.Asset.Runtime {
                 refCounts.Dispose();
             }
 
+            ReleaseFileTask();
+            ReleaseEcsContainer();
+
 #if UNITY_EDITOR
             if (requestEditorAssetTasks.IsCreated) {
                 requestEditorAssetTasks.Dispose();
@@ -389,109 +287,6 @@ namespace FallShadow.Asset.Runtime {
 #endif
         }
 
-        public void GlobFiles() {
-            if (requestFileTaskCount > 0) {
-                needInvokeGlobFiles = true;
-                return;
-            }
-
-            subSceneFileName2Path.Clear();
-            url2ContentCatalogPath.Clear();
-
-            foreach (var mount in mounts) {
-                var dirPath = mount.ToString();
-                string[] files;
-
-                // 得到打包资源目录下的所有文件
-                if (dirPath.StartsWith(specialDirectory.ToString())) {
-                    var list = new List<string>();
-
-                    if (specialFilePaths.IsCreated) {
-                        foreach (var path in specialFilePaths) {
-                            var fullPath = $"{specialDirectory}/{path}";
-                            list.Add(fullPath);
-                        }
-                    }
-
-                    files = list.ToArray();
-                }
-                else {
-                    if (!Directory.Exists(dirPath)) {
-                        continue;
-                    }
-
-                    files = Directory.GetFiles(dirPath, "*", SearchOption.AllDirectories);
-                }
-
-
-                var length = mount.Length;
-                var isRemoteDirectory = dirPath.StartsWith(httpsSep) || dirPath.StartsWith(httpSep);
-                var isStreamingAssets = dirPath.StartsWith(Application.streamingAssetsPath.Replace("\\", sep.ToString()));
-
-                foreach (var file in files) {
-                    var fsFile = FixedStringUtil.Replace(new FixedString512Bytes(file), '\\', '/');
-                    // 提取出文件相对短路径
-                    var relativePath = FixedStringUtil.Substring(fsFile, length + 1);
-
-
-                    // subScene
-                    if (relativePath.IndexOf(entitySceneDir) != -1 || relativePath.IndexOf(contentArchiveDir) != -1) {
-                        if (relativePath.IndexOf(contentFileName) != -1) {
-                            var relativeDirectory = FixedStringUtil.Substring(relativePath, 0, relativePath.Length - contentFileName.Length);
-
-                            FixedString512Bytes url = protocolSep;
-                            url.Append(FixedStringUtil.ToLower(relativeDirectory));
-                            url.Append(bundleSep);
-
-                            url2ContentCatalogPath[url] = fsFile;
-                        }
-                        else {
-                            var fileName = Path.GetFileName(file);
-                            subSceneFileName2Path[fileName] = fsFile;
-                        }
-                    }
-                    else {
-                        if (hash2normal.ContainsKey(relativePath)) {
-                            relativePath = hash2normal[relativePath];
-                        }
-
-                        relativePath = FixedStringUtil.ToLower(relativePath);
-                        var index = relativePath.IndexOf(bundleSep);
-                        var isBundleFile = index != -1 && index + bundleSep.Length == relativePath.Length;
-
-                        if (isBundleFile) {
-                            fileKey2FilePath[relativePath] = fsFile.ToString();
-                        }
-                        else {
-                            if (isRemoteDirectory) {
-                                fileKey2FilePath[relativePath] = fsFile.ToString();
-                            }
-                            else {
-                                switch (Application.platform) {
-                                    case RuntimePlatform.Android:
-                                        if (isStreamingAssets) {
-                                            fileKey2FilePath[relativePath] = fsFile.ToString();
-                                        }
-                                        else {
-                                            fileKey2FilePath[relativePath] = $"file://{fsFile}";
-                                        }
-                                        break;
-                                    case RuntimePlatform.LinuxPlayer:
-                                    case RuntimePlatform.OSXPlayer:
-                                    case RuntimePlatform.OSXEditor:
-                                    case RuntimePlatform.IPhonePlayer:
-                                        fileKey2FilePath[relativePath] = $"file://{fsFile}";
-                                        break;
-                                    default:
-                                        fileKey2FilePath[relativePath] = fsFile.ToString();
-                                        break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
 
         public void Tick() {
             TickRequestFileTasks();
@@ -508,210 +303,11 @@ namespace FallShadow.Asset.Runtime {
             // AutoReleaseBundle();
         }
 
-        private void TickRequestFileTasks() {
-            for (var t = 0; t < requestFileTaskCount; t++) {
-                ref var task = ref requestFileTasks[t];
-
-                if (task.operation == null) {
-                    string fileUrl;
-                    var isRemoteAssets = task.url.StartsWith(new FixedString512Bytes(httpsSep)) || task.url.StartsWith(new FixedString512Bytes(httpSep));
-                    if (!isRemoteAssets) {
-#if UNITY_EDITOR
-                        fileUrl = $"file://{task.url}";
-#else
-                        if (Application.platform == RuntimePlatform.Android) {
-                            fileUrl = task.url.ToString();
-                        } else {
-                            fileUrl = $"file://{task.url}";
-                        }
-#endif
-                    }
-                    else {
-                        fileUrl = task.url.ToString();
-                    }
-
-                    var webReq = UnityWebRequest.Get(fileUrl);
-                    task.operation = webReq.SendWebRequest();
-                }
-
-                if (task.operation.isDone && task.operation.webRequest.isDone) {
-                    if (!string.IsNullOrEmpty(task.operation.webRequest.error)) {
-                        if (Application.isMobilePlatform || !specialDirectory.IsEmpty) {
-                            if (loadMode == LoadMode.Runtime) {
-                                Debug.LogWarning($"[AssetDB] 加载 {task.url} 文件失败!");
-                            }
-                        }
-
-                        requestFileTaskConsumeAt(ref t);
-                        continue;
-                    }
-
-                    var bytes = task.operation.webRequest.downloadHandler.data;
-
-                    if (bytes == null || bytes.Length == 0) {
-                        requestFileTaskConsumeAt(ref t);
-                        continue;
-                    }
-
-                    // 下载任务完成，如果任务是 file.txt 解析其中资源，生成
-                    // specialFilePaths （总资源文件路径信息）
-                    // hash2normal （带 hash 的文件路径 和 正常文件路径 字典）
-
-                    switch (task.type) {
-                        case FileType.Files:
-                            unsafe {
-                                fixed (byte* p = bytes) {
-                                    var cursor = 0;
-                                    var length = bytes.Length;
-                                    var lastRelativePath = new FixedString512Bytes();
-                                    var bundle2Assets = new NativeParallelHashMap<FixedString512Bytes, NativeList<FixedString512Bytes>>(16, Allocator.Temp);
-
-                                    for (var i = 0; i < length; i++) {
-                                        var item = p[i];
-
-                                        if (item == '\n') {
-                                            var offset = i - cursor;
-
-                                            if (offset == 0) {
-                                                cursor = i + 1;
-                                                continue;
-                                            }
-
-                                            var line = FixedStringUtil.GetFixedString512(p, cursor, offset);
-
-                                            // 检查最后一个字符是否是回车，是的话就削减
-                                            if (line[^1] == '\r') {
-                                                line.Length -= 1;
-                                            }
-
-                                            // 检查第一个字符是否是 tab，是的话处理 file.txt 的 bundle To asset
-                                            if (line[0] == '\t') {
-                                                if (lastRelativePath.Length == 0) {
-                                                    cursor = i + 1;
-                                                    Debug.LogError($"[AssetDB] {lastRelativePath} 不存在，请检查 files.txt");
-                                                    continue;
-                                                }
-
-                                                if (!bundle2Assets.TryGetValue(lastRelativePath, out var assets)) {
-                                                    assets = new NativeList<FixedString512Bytes>(16, Allocator.Temp);
-                                                    bundle2Assets[lastRelativePath] = assets;
-                                                }
-
-                                                assets.Add(FixedStringUtil.Substring(line, 1));
-                                                cursor = i + 1;
-                                                continue;
-                                            }
-
-                                            var relativePath = line;
-                                            lastRelativePath = relativePath;
-                                            specialFilePaths.Add(relativePath);
-
-                                            if (Common.FileUtil.FilePathExclude32Hash(relativePath, out var fileNoHashName)) {
-                                                hash2normal[relativePath] = fileNoHashName;
-                                            }
-
-                                            cursor = i + 1;
-                                        }
-                                    }
-
-                                    // 收集 BundleAssets 数据
-                                    foreach (var kv in bundle2Assets) {
-                                        var relativePath = kv.Key;
-                                        var assets = kv.Value;
-
-                                        if (!relativePath.EndsWith(bundleSep) || assets.Length == 0) {
-                                            continue;
-                                        }
-
-                                        if (!hash2normal.TryGetValue(relativePath, out var bundleKey)) {
-                                            bundleKey = relativePath;
-                                        }
-
-                                        var byteList = new List<byte>();
-
-                                        foreach (var asset in assets) {
-                                            for (var l = 0; l < asset.Length; l++) {
-                                                byteList.Add(asset[l]);
-                                            }
-
-                                            byteList.Add((byte)'\n');
-                                        }
-
-                                        AddUrl2AssetInfo(bundleKey, byteList.ToArray());
-                                    }
-                                }
-                            }
-                            break;
-                    }
-                    requestFileTaskConsumeAt(ref t);
-                }
-            }
-
-            if (requestFileTaskCount == 0 && needInvokeGlobFiles) {
-                needInvokeGlobFiles = false;
-                GlobFiles();
-            }
-        }
 
 
 
-        /// <summary>
-        /// 通过 file.txt 的 bundle2bytes 生成 bundleKey2Assets url2AssetInfo
-        /// bundleKey2Assets 大的 bundle 目录 对应 很多资源路径
-        /// url2AssetInfo 不仅仅包括大的 bundle 目录对应的 AssetInfo，还包含每一个文件具体 url 对应的 AssetInfo
-        /// </summary>
-        /// <param name="bundleKey"> file.txt 的一个 bundle 对应多个文件 </param>
-        /// <param name="bytes"> 对应的多个文件组成的 bytes </param>
-        private void AddUrl2AssetInfo(FixedString512Bytes bundleKey, byte[] bytes) {
-            if (bytes == null || bytes.Length == 0) {
-                return;
-            }
 
-            unsafe {
-                var ptr = (byte*)Marshal.UnsafeAddrOfPinnedArrayElement(bytes, 0).ToPointer();
-                var cursor = 0;
-                var length = bytes.Length;
-
-                url2AssetInfo[$"{protocolSep}{bundleKey}"] = new AssetInfo {
-                    type = TaskType.Bundle,
-                    bundleKey = bundleKey
-                };
-
-                url2AssetInfo[$"{protocolSep}{bundleKey}{loadAllAssetsSep}"] = new AssetInfo {
-                    type = TaskType.Bundle,
-                    bundleKey = bundleKey
-                };
-
-                if (!bundleKey2Assets.TryGetValue(bundleKey, out var assets)) {
-                    assets = new NativeList<FixedString512Bytes>(16, Allocator.Persistent);
-                    bundleKey2Assets[bundleKey] = assets;
-                }
-
-                for (var i = 0; i < length; i++) {
-                    var item = ptr[i];
-
-                    if (item == '\n') {
-                        FixedString512Bytes assetPath = FixedStringUtil.GetFixedString512(ptr, cursor, i - cursor);
-
-                        if (assetPath.Length > 0) {
-                            if (assetPath[^1] == '\r') {
-                                assetPath.Length -= 1;
-                            }
-
-                            FixedString512Bytes assetUrl = $"{protocolSep}{FixedStringUtil.Substring(bundleKey, 0, bundleKey.Length - bundleSep.Length)}/{assetPath}";
-                            assets.Add(assetUrl);
-                            url2AssetInfo[assetUrl] = new AssetInfo {
-                                type = TaskType.BundleAsset,
-                                bundleKey = bundleKey,
-                                assetPath = assetPath
-                            };
-                        }
-
-                        cursor = i + 1;
-                    }
-                }
-            }
-        }
+        
 
 
 
@@ -916,11 +512,7 @@ namespace FallShadow.Asset.Runtime {
             public AsyncOperation asyncOperation;
         }
 
-        private struct RequestFileTask {
-            public FileType type;
-            public FixedString512Bytes url;
-            public UnityWebRequestAsyncOperation operation;
-        }
+
 
         internal struct AssetInfo {
             public TaskType type;

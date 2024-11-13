@@ -52,7 +52,7 @@ public class ResHelper : MonoBehaviour {
         dbAtlasSpriteLoader.Init();
 
         db = new AssetDB();
-        db.Initialize(loadMode);
+        db.Initialize(true, loadMode);
 
         db.RegisterAsset(".txt", typeof(TextAsset), false);
         db.RegisterAsset(".toml", typeof(TextAsset), false);
@@ -75,13 +75,12 @@ public class ResHelper : MonoBehaviour {
 
 #if WECHAT && !UNITY_EDITOR
         db.SetSpecialDirectory($"{remoteConfig.remoteUrl}/StreamingAssets");
-        db.SetFilesUrl($"{remoteConfig.remoteUrl}/StreamingAssets/files.txt");
+        db.AddFilesTask($"{remoteConfig.remoteUrl}/StreamingAssets/files.txt");
         db.Mount($"{remoteConfig.remoteUrl}/StreamingAssets");
 #else
-        db.SetFilesUrl($"{sandboxMountPath}/ files.txt");
+        db.AddFilesTask($"{sandboxMountPath}/files.txt");
         db.Mount(sandboxMountPath);
 #endif
-        db.GlobFiles();
 
         isInited = true;
     }
