@@ -2,6 +2,9 @@ using FallShadow.Common;
 using System;
 using Unity.Collections;
 
+// 从池子里获取 handle，使用过一次 version 加一
+// 可以用于检验合法性，比如可以瞬间申请加载 A 资源 100 次，计数增加到了 100，前面 99 次创建的申请在使用时会被拒绝，因为不合法
+// 但是一般来说，同样资源的申请，应该只存在一个，这里相当于更加保险。
 public struct HandleManager<T> {
     private NativeArray<int> versions;
     private NativeList<int> freeHandles;
@@ -48,6 +51,7 @@ public struct HandleManager<T> {
             return;
         }
 
+        // 释放 handle 时，增加 version
         if(handle.index >= 0 && handle.index < versions.Length) {
             versions[handle.index]++;
             freeHandles.Add(handle.index);
@@ -58,8 +62,7 @@ public struct HandleManager<T> {
     }
 
     public bool IsValid(in Handle<T> handle) {
-        if(handle.index > 0 && handle.index < versions.Length
-                             && versions[handle.index] == handle.version) {
+        if(handle.index > 0 && handle.index < versions.Length && versions[handle.index] == handle.version) {
             return true;
         }
 

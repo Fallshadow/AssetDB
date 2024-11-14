@@ -61,16 +61,50 @@ namespace FallShadow.Asset.Runtime {
         // 收集到的字串都放到这里，作用仅仅是 GlobFiles 中使用
         private NativeList<FixedString512Bytes> resourceBundleFilePaths;
 
+
+        // 资源简要路径和资源详细属性的映射
+        // example 1:
+        // Key: "asset://graphics/pipelines.bundle"
+        // value: AssetInfo.type = TaskType.Bundle AssetInfo.bundleKey = "graphics/pipelines.bundle" 非具体资源所以没有 assetPath
+        // example 2:
+        // Key: "asset://graphics/pipelines/forwardrenderer.asset"
+        // value: AssetInfo.type = TaskType.BundleAsset AssetInfo.bundleKey = "graphics/pipelines.bundle"  AssetInfo.assetPath = "forwardrenderer.asset"
+        // example 3:
+        // Key: "asset://samples/tps/arts/character/clips/chr_player_actor/clr_fall2idle.anim"
+        // value: AssetInfo.type = TaskType.BundleAsset AssetInfo.bundleKey = "samples/tps/arts/character/clips.bundle"  AssetInfo.assetPath = "chr_player_actor/clr_fall2idle.anim"
+        internal NativeHashMap<FixedString512Bytes, AssetInfo> url2AssetInfo;
+        // 一个 bundle 对应多个资源 Asset
+        // 这里的 bundle 是类似 "graphics/pipelines.bundle" 这种不带前缀也不带 hash 的，里面的资源也都是相对于 bundle 的。
+        private NativeParallelHashMap<FixedString512Bytes, NativeList<FixedString512Bytes>> bundleKey2Assets;
+
         private void InitFileTask() {
+            requestFileTaskCount = 0;
             requestFileTasks = new RequestFileTask[maxFileTaskCount];
             resourceBundleFilePaths = new NativeList<FixedString512Bytes>(maxFileBundleCount, Allocator.Persistent);
             hash2normal = new NativeParallelHashMap<FixedString512Bytes, FixedString512Bytes>(maxAssetCount, Allocator.Persistent);
+
+            url2AssetInfo = new NativeHashMap<FixedString512Bytes, AssetInfo>(maxAssetCount, Allocator.Persistent);
+            bundleKey2Assets = new NativeParallelHashMap<FixedString512Bytes, NativeList<FixedString512Bytes>>(maxAssetCount, Allocator.Persistent);
         }
 
-        private void ReleaseFileTask() {
+        private void DisposeFileTask() {
             requestFileTasks = null;
             if (resourceBundleFilePaths.IsCreated) resourceBundleFilePaths.Dispose();
             if (hash2normal.IsCreated) hash2normal.Dispose();
+
+            if (url2AssetInfo.IsCreated) {
+                url2AssetInfo.Dispose();
+            }
+
+            if (bundleKey2Assets.IsCreated) {
+                foreach (var kv in bundleKey2Assets) {
+                    if (kv.Value.IsCreated) {
+                        kv.Value.Dispose();
+                    }
+                }
+
+                bundleKey2Assets.Dispose();
+            }
         }
 
         // AssetDB 第一时间需要加载的资源清单

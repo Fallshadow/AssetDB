@@ -1,4 +1,5 @@
 using FallShadow.Common;
+using System;
 using System.IO;
 using Unity.Collections;
 using UnityEditor;
@@ -24,7 +25,24 @@ namespace FallShadow.Asset.Runtime {
 		private int requestEditorSceneTaskCount;
 		private NativeArray<RequestEditorSceneTask> requestEditorSceneTasks;
 
-		private void TickRequestEditorAssetTasks() {
+		private void InitEditor() {
+            requestEditorAssetTasks = new NativeArray<RequestEditorAssetTask>(maxAssetCount, Allocator.Persistent);
+            requestEditorAssetTaskCount = 0;
+            requestEditorSceneTasks = new NativeArray<RequestEditorSceneTask>(maxSceneTaskCount, Allocator.Persistent);
+            requestEditorSceneTaskCount = 0;
+        }
+
+		private void DisposeEditor() {
+            if (requestEditorAssetTasks.IsCreated) {
+                requestEditorAssetTasks.Dispose();
+            }
+
+            if (requestEditorSceneTasks.IsCreated) {
+                requestEditorSceneTasks.Dispose();
+            }
+        }
+
+        private void TickRequestEditorAssetTasks() {
 			if (requestFileTaskCount > 0) {
 				return;
 			}

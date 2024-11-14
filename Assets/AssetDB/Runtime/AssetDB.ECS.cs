@@ -7,6 +7,9 @@ using UnityEngine.Networking;
 
 namespace FallShadow.Asset.Runtime {
     public partial class AssetDB {
+        private const int maxSubSceneFileCount = 128;
+        private const int maxSubSceneCatalogCount = 16;
+
         private NativeParallelHashMap<FixedString128Bytes, FixedString512Bytes> subSceneFileName2Path;
         private NativeParallelHashMap<FixedString512Bytes, FixedString512Bytes> url2ContentCatalogPath;
 
@@ -15,7 +18,7 @@ namespace FallShadow.Asset.Runtime {
             url2ContentCatalogPath = new NativeParallelHashMap<FixedString512Bytes, FixedString512Bytes>(maxSubSceneCatalogCount, Allocator.Persistent);
         }
 
-        private void ReleaseEcsContainer() {
+        private void DisposeEcsContainer() {
             if (subSceneFileName2Path.IsCreated) {
                 subSceneFileName2Path.Dispose();
             }

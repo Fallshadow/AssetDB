@@ -1,10 +1,32 @@
 using FallShadow.Common;
 using System;
+using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
 
 namespace FallShadow.Asset.Runtime {
     public partial class AssetDB {
+        private const int prefAssetTypeCount = 16;
+
+        // 文件扩展名对应资源类型 extension to AssetType
+        // 比如 .prefab 对应 GameObject
+        private static Dictionary<FixedString32Bytes, Type> ext2AssetType;
+        // 为二进制文件单独创建一个列表额外储存这些扩展名
+        private static NativeList<FixedString32Bytes> binaryAssetExts;
+
+        private void InitUtil() {
+            ext2AssetType = new Dictionary<FixedString32Bytes, Type>(prefAssetTypeCount);
+            binaryAssetExts = new NativeList<FixedString32Bytes>(prefAssetTypeCount, Allocator.Persistent);
+        }
+
+        private void DisposeUtil() {
+            ext2AssetType.Clear();
+            ext2AssetType = null;
+            if (binaryAssetExts.IsCreated) {
+                binaryAssetExts.Dispose();
+            }
+        }
+
         // url: "asset://foo/bar/foobar[.bin|.dll|.sdf]"
         private bool IsBinaryFile(FixedString512Bytes url) {
             foreach (var ext in binaryAssetExts) {
@@ -18,17 +40,37 @@ namespace FallShadow.Asset.Runtime {
             return false;
         }
 
+        // bundleKey: "foo/bar/foobar.bundle"
+        private bool IsMountRemoteBundle(FixedString512Bytes bundleKey) {
+            if (fileKey2FilePath.TryGetValue(bundleKey, out var path)) {
+                return path.StartsWith(httpsSep) || path.StartsWith(httpSep);
+            }
+
+            return false;
+        }
+
+        // bundleKey: "foo/bar/foobar.bundle"
+        // filePath: fileKey2FilePath[bundleKey]
+        private string GetMountBundleFilePath(FixedString512Bytes bundleKey) {
+            if (fileKey2FilePath.TryGetValue(bundleKey, out var path)) {
+                return path;
+            }
+
+            return null;
+        }
+
         // url1: "asset://foo/bar/foobar/car/data/element.toml"
         // bundleKey1: "foo/bar/foobar.bundle"
         //
         // url2: "asset://foo/bar/foobar/car/data/element.toml/*"
         // bundleKey2: "foo/bar/foobar.bundle"
+        // 拿着 url 从资源清单列表中找到 bundleKey
         private FixedString512Bytes GetBundleKey(FixedString512Bytes url) {
             if (url2AssetInfo.ContainsKey(url)) {
                 return url2AssetInfo[url].bundleKey;
             }
 
-            Debug.LogError($"[AssetDB] 查找资源: {url} 所属的 bundle 失败, 请检查资源是否存在!");
+            Debug.LogError($"[AssetDB][GetBundleKey] 查找资源: {url} 所属的 bundle 失败, 请检查资源是否存在!");
             return default;
         }
 
@@ -44,6 +86,7 @@ namespace FallShadow.Asset.Runtime {
         //
         // url 4: "asset://foo/bar/foobar.bundle/*"
         // taskType: Bundle
+        // 从资源清单的产出列表中查找 url 并给出类型。
         private TaskType GetTaskType(FixedString512Bytes url) {
             if (url2AssetInfo.ContainsKey(url)) {
                 return url2AssetInfo[url].type;
@@ -55,7 +98,7 @@ namespace FallShadow.Asset.Runtime {
                 return TaskType.Asset;
             }
 
-            Debug.LogWarning($"[AssetDB] 查找资源: {url} 失败, 请检查资源是否存在!");
+            Debug.LogWarning($"[AssetDB][GetTaskType] 查找资源: {url} 失败, 请检查资源是否存在!");
             return TaskType.None;
         }
 
@@ -214,6 +257,26 @@ namespace FallShadow.Asset.Runtime {
             return null;
         }
 
+        // bundleKey: "foo/bar/foobar.bundle"
+        // fileKey: "foo/bar/foobar.deps"
+        // filePath: fileKey2FilePath[fileKey]
+        private string GetDepsFilePath(FixedString512Bytes bundleKey) {
+            var index = bundleKey.IndexOf(bundleSep);
+
+            if (index == -1) {
+                return null;
+            }
+
+            var fileKey = FixedStringUtil.Substring(bundleKey, 0, index);
+            fileKey.Append(depsSep);
+
+            if (fileKey2FilePath.TryGetValue(fileKey, out var path)) {
+                return path;
+            }
+
+            return null;
+        }
+
         private void requestFileTaskConsumeAt(ref int t) {
             requestFileTasks[t] = requestFileTasks[requestFileTaskCount - 1];
             requestFileTasks[requestFileTaskCount - 1] = default;
@@ -232,6 +295,13 @@ namespace FallShadow.Asset.Runtime {
             requestAssetTasks[t] = requestAssetTasks[requestAssetTaskCount - 1];
             requestAssetTasks[requestAssetTaskCount - 1] = default;
             requestAssetTaskCount--;
+            t--;
+        }
+
+        private void assetCachesConsumeAt(ref int t) {
+            assetCaches[t] = assetCaches[assetCacheCount - 1];
+            assetCaches[assetCacheCount - 1] = default;
+            assetCacheCount--;
             t--;
         }
 

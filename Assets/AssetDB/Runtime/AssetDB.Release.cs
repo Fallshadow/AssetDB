@@ -37,7 +37,6 @@ namespace FallShadow.Asset.Runtime {
                 if (refCounts[handle.index] <= 0) {
                     handleManager.Free(handle);
                     url2handle.Remove(url);
-
                 }
 
                 Debug.LogWarning($"[AssetDB] Release From AssetDatabase: {url} refCount {refCounts[handle.index]}");
@@ -214,8 +213,5 @@ namespace FallShadow.Asset.Runtime {
                 }
             }
         }
-
-
-
     }
 }

@@ -7,8 +7,10 @@ using UnityEngine;
 
 namespace FallShadow.Asset.Runtime {
     // mount 
-    // 产出 fileKey2FilePath
+    // 指定一个存档文件，产出 fileKey2FilePath
+    // 一般这个存档文件和资源清单一致
     public partial class AssetDB {
+        private const int maxMountCount = 16;
 
         // 远程资源路径
         // 比如 {remoteConfig.remoteUrl}/StreamingAssets
@@ -30,7 +32,20 @@ namespace FallShadow.Asset.Runtime {
         private Dictionary<FixedString512Bytes, string> fileKey2FilePath;
 
         private void InitMount() {
+            mounts = new NativeList<FixedString512Bytes>(maxMountCount, Allocator.Persistent);
             specialDirectory = Application.streamingAssetsPath.Replace("\\", sep.ToString());
+            fileKey2FilePath = new Dictionary<FixedString512Bytes, string>();
+        }
+
+        private void DisposeMount() {
+            if (mounts.IsCreated) {
+                mounts.Dispose();
+            }
+
+            if (fileKey2FilePath != null) {
+                fileKey2FilePath.Clear();
+                fileKey2FilePath = null;
+            }
         }
 
         public void SetSpecialDirectory(FixedString512Bytes url) {
