@@ -1,2 +1,10 @@
-arts/ui/common_e008b60554bedf187f25c8b0bc5a0c3e.bundle
+res/prefabs/fx_54e1999426747b9e312baf617e40fa3b.bundle
+	fx_windarea.prefab
+res/scenes_d549ae0efd3d781ff96401e9c8afb07c.bundle
+	entry.unity
+	login.unity
+	main.unity
+	main_level.unity
+res/scenes_d549ae0efd3d781ff96401e9c8afb07c.deps
+res/sprites/common_9bc6b18d738c69d593af3ee8eee08748.bundle
 	icon_load_null.jpg

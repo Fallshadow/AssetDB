@@ -74,9 +74,23 @@ namespace FallShadow.Asset.Runtime {
 
 				if (type == typeof(Scene)) {
 					if (url2SceneInfo.TryGetValue(task.url, out var sceneInfo)) {
-						// https://docs.unity.cn/cn/current/ScriptReference/SceneManagement.EditorSceneManager.LoadSceneInPlayMode.html
-						// 此函数与 SceneManager.LoadScene 的行为相同，这意味着加载不会立即发生，但保证在 <<下一帧中完成>>，此行为还意味着返回的场景的状态设置为 Loading
-						var scene = UnityEditor.SceneManagement.EditorSceneManager.LoadSceneInPlayMode(assetPath.ToString(), new LoadSceneParameters(sceneInfo.loadSceneMode));
+						bool isRepeatRequest = false;
+                        foreach (var editorSceneTask in requestEditorSceneTasks) {
+                            if (editorSceneTask.scene.path != null && editorSceneTask.scene.path == assetPath) {
+                                Debug.LogWarning($"[AssetDB] 正在加载的场景任务中已经存在 {assetPath} 请检查是否重复请求场景！");
+                                isRepeatRequest = true;
+                                break;
+                            }
+                        }
+
+						if (isRepeatRequest) {
+                            requestEditorAssetTaskConsumeAt(ref t);
+							continue;
+                        }
+
+                        // https://docs.unity.cn/cn/current/ScriptReference/SceneManagement.EditorSceneManager.LoadSceneInPlayMode.html
+                        // 此函数与 SceneManager.LoadScene 的行为相同，这意味着加载不会立即发生，但保证在 <<下一帧中完成>>，此行为还意味着返回的场景的状态设置为 Loading
+                        var scene = UnityEditor.SceneManagement.EditorSceneManager.LoadSceneInPlayMode(assetPath.ToString(), new LoadSceneParameters(sceneInfo.loadSceneMode));
 
 						requestEditorSceneTasks[requestEditorSceneTaskCount++] = new RequestEditorSceneTask() {
 							handle = task.handle,
@@ -117,7 +131,7 @@ namespace FallShadow.Asset.Runtime {
 					cache.succeed = false;
 				}
 
-				assetCaches[assetCacheCount++] = cache;
+ 				assetCaches[assetCacheCount++] = cache;
 
 				requestEditorAssetTaskConsumeAt(ref t);
 			}

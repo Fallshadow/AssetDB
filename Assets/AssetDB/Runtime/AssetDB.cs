@@ -45,6 +45,7 @@ namespace FallShadow.Asset.Runtime {
             InitRequestAllAsset();
             InitRequestBundleTask();
             InitDeps();
+            InitAssetTask();
             InitSceneTask();
             InitHandle();
 
@@ -62,6 +63,7 @@ namespace FallShadow.Asset.Runtime {
             DisposeRequestAllAsset();
             DisposeRequestBundleTask();
             DisposeDeps();
+            DisposeAssetTask();
             DisposeSceneTask();
             DisposeHandle();
 
@@ -89,8 +91,8 @@ namespace FallShadow.Asset.Runtime {
         }
 
         public enum TaskType {
-            Bundle,
-            BundleAsset,
+            Bundle, // 此类型不需要创建 asset task 只是为了依赖
+            BundleAsset, // 此类型 需要创建 asset task 
             Asset,
             None
         }

@@ -186,7 +186,7 @@ namespace FallShadow.Asset.Runtime {
                                                 }
 
                                                 if (!bundle2Assets.TryGetValue(lastRelativePath, out var assets)) {
-                                                    assets = new NativeList<FixedString512Bytes>(16, Allocator.Temp);
+                                                    assets = new NativeList<FixedString512Bytes>(maxFileBundleContainCount, Allocator.Temp);
                                                     bundle2Assets[lastRelativePath] = assets;
                                                 }
 
@@ -253,7 +253,7 @@ namespace FallShadow.Asset.Runtime {
         /// url2AssetInfo 不仅仅包括大的 bundle 目录对应的 AssetInfo，还包含每一个文件具体 url 对应的 AssetInfo
         /// </summary>
         /// <param name="bundleKey"> file.txt 的一个 bundle 名称（不带 hash 的）比如 prefabs.bundle </param>
-        /// <param name="bytes"> 对应的多个文件组成的 bytes，其路径也是相对于父 bundle 而言的 </param>
+        /// <param name="bytes"> 对应的多个文件组成的 bytes，就是每个文件名（相对于 bundle 的路径名）都打碎成 bytes 依次排列到一起</param>
         private void AddUrl2AssetInfo(FixedString512Bytes bundleKey, byte[] bytes) {
             if (bytes == null || bytes.Length == 0) {
                 return;
@@ -307,6 +307,5 @@ namespace FallShadow.Asset.Runtime {
                 }
             }
         }
-
     }
 }

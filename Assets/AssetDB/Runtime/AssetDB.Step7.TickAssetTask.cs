@@ -20,6 +20,7 @@ namespace FallShadow.Asset.Runtime {
         private int assetTaskCount;
         private AssetTask[] assetTasks;
 
+        // 所有下载的资源放置的地方
         private int assetCacheCount;
         private AssetCache[] assetCaches;
 

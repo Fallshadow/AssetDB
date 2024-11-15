@@ -10,7 +10,7 @@ namespace FallShadow.Common {
         /// <returns></returns>
         public static bool FilePathExclude32Hash(FixedString512Bytes filePath, out FixedString512Bytes fileNoHashName) {
             bool isInRule = false;
-            fileNoHashName = null;
+            fileNoHashName = default;
 
             var sepIndex = filePath.LastIndexOf(SymbolStringUtil.Sep);
             // fileWithExt: prefabs_a515803f18202a07244ee82b16b6434d.bundle
