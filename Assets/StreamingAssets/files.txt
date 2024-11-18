@@ -1,10 +1,24 @@
+res/fonts/xiqueregular_ef1d440ff8a55416bb0a15e7c1e1605a.bundle
+	xiqueregular sdf 1.asset
+	xiqueregular sdf 10.asset
+	xiqueregular sdf 11.asset
+	xiqueregular sdf 2.asset
+	xiqueregular sdf 3.asset
+	xiqueregular sdf 4.asset
+	xiqueregular sdf 5.asset
+	xiqueregular sdf 6.asset
+	xiqueregular sdf 7.asset
+	xiqueregular sdf 8.asset
+	xiqueregular sdf 9.asset
+	xiqueregular sdf.asset
+	xiqueregular.ttf
 res/prefabs/fx_807dc05acbae8867019fc9c25ab9e727.bundle
 	fx_windarea.prefab
-res/scenes_fe51113ca01594640e97c15d49e52b36.bundle
+res/scenes_f4149f45d2d42f00dca1bd48cf5effbb.bundle
 	entry.unity
 	login.unity
 	main.unity
 	main_level.unity
-res/scenes_fe51113ca01594640e97c15d49e52b36.deps
+res/scenes_f4149f45d2d42f00dca1bd48cf5effbb.deps
 res/sprites/common_d260de79b3c3a877e419edf69945b32f.bundle
 	icon_load_null.jpg

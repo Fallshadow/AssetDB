@@ -1,0 +1,8 @@
+[[bundle]]
+patterns = [
+    "*.ttf",
+    "*.asset",
+    "*.mat",
+    "*.fontsettings",
+    "*.png",
+]

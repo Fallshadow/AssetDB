@@ -23,7 +23,7 @@
     "disableUseStrict": false,
     "babelSetting": {
       "ignore": [
-        "$GAME_NAME.wasm.framework.unityweb.js"
+        "webgl.wasm.framework.unityweb.js"
       ],
       "disablePlugins": [],
       "outputPath": ""
@@ -37,7 +37,7 @@
   "compileType": "game",
   "libVersion": "3.5.1",
   "appid": "wx57e96a0b5b1af965",
-  "projectname": "$PROJECT_NAME",
+  "projectname": "TestAssetDB",
   "simulatorType": "wechat",
   "simulatorPluginLibVersion": {},
   "packOptions": {
