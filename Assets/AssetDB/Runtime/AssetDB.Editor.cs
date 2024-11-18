@@ -132,8 +132,9 @@ namespace FallShadow.Asset.Runtime {
 				}
 
  				assetCaches[assetCacheCount++] = cache;
+                Debug.Log($"[AssetDB] 缓存资源: {cache.url}");
 
-				requestEditorAssetTaskConsumeAt(ref t);
+                requestEditorAssetTaskConsumeAt(ref t);
 			}
 		}
 
@@ -149,7 +150,8 @@ namespace FallShadow.Asset.Runtime {
 					continue;
 				}
 
-				for (uint cacheIndex = 0; cacheIndex < assetCacheCount; cacheIndex++) {
+                Debug.Log($"[AssetDB] 加载场景完成: {task.scene.name}");
+                for (uint cacheIndex = 0; cacheIndex < assetCacheCount; cacheIndex++) {
 					ref var cache = ref assetCaches[cacheIndex];
 
 					if (!cache.handle.Equals(task.handle)) {

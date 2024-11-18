@@ -44,6 +44,8 @@ namespace FallShadow.Asset.Runtime {
                 throw new Exception($"[AssetDB] invalid scene url: {url}");
             }
 
+            Debug.Log($"[AssetDB] 请求加载场景: {url}");
+
             url = FixedStringUtil.ToLower(url);
             url2SceneInfo[url] = new SceneInfo {
                 loadSceneMode = loadSceneMode
@@ -120,6 +122,7 @@ namespace FallShadow.Asset.Runtime {
 
                 if (task.asyncOperation.isDone) {
                     handle2SceneName[task.handle.index] = task.sceneInfo.sceneName;
+                    Debug.Log($"[AssetDB] 加载场景完成: {task.sceneInfo.sceneName}");
                     sceneTaskConsumeAt(ref i);
                 }
             }

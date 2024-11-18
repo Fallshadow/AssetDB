@@ -38,7 +38,7 @@ namespace FallShadow.Asset.Runtime {
                         }
 
 #if USE_WECHAT_LOAD && WECHAT && !UNITY_EDITOR
-                        var request = WXAssetBundle.GetAssetBundle(GetBundleFilePath(task.bundleKey));
+                        var request = WXAssetBundle.GetAssetBundle(GetMountBundleFilePath(task.bundleKey));
 #else
                         var request = UnityWebRequestAssetBundle.GetAssetBundle(GetMountBundleFilePath(task.bundleKey));
 #endif
@@ -56,7 +56,8 @@ namespace FallShadow.Asset.Runtime {
                         break;
                     }
 
-                    // TODO：这条这样写的话，那 allDependencyDone 岂不是永远是 false?
+                    // 这条这样写的话，那 allDependencyDone 岂不是永远是 false?
+                    // 并不是，因为最根部的资源总会是没有依赖的，index2Bundle 总会被慢慢填充。
                     if (!index2Bundle.ContainsKey(handle.index)) {
                         allDependencyDone = false;
                         break;
@@ -102,6 +103,7 @@ namespace FallShadow.Asset.Runtime {
                         var bundleUrl = $"{protocolSep}{task.bundleKey}";
                         var handle = url2handle[bundleUrl];
                         index2Bundle[handle.index] = assetBundle;
+                        Debug.Log($"[AssetDB] 加载 bundle: {task.bundleKey} 成功! index: {handle.index}");
 
                         // 更新该 bundle 依赖的引用计数
                         foreach (var dep in dependencies) {

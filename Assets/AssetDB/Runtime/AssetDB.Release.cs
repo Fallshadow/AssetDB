@@ -75,29 +75,23 @@ namespace FallShadow.Asset.Runtime {
                 return;
             }
 
-            for (var i = 0; i < assetTaskCount; i++) {
+            for (int i = 0; i < assetTaskCount; i++) {
                 ref var task = ref assetTasks[i];
 
                 if (handle.Equals(task.handle)) {
-                    assetTasks[i] = assetTasks[assetTaskCount - 1];
-                    assetTasks[assetTaskCount - 1] = default;
-                    assetTaskCount--;
-                    i--;
+                    assetTaskConsumeAt(ref i);
                 }
             }
 
-            for (uint i = 0; i < sceneTaskCount; i++) {
+            for (int i = 0; i < sceneTaskCount; i++) {
                 ref var task = ref sceneTasks[i];
 
                 if (handle.Equals(task.handle)) {
-                    sceneTasks[i] = sceneTasks[sceneTaskCount - 1];
-                    sceneTasks[sceneTaskCount - 1] = default;
-                    sceneTaskCount--;
-                    i--;
+                    sceneTaskConsumeAt(ref i);
                 }
             }
 
-            for (uint i = 0; i < assetCacheCount; i++) {
+            for (int i = 0; i < assetCacheCount; i++) {
                 ref var cache = ref assetCaches[i];
 
                 if (!cache.handle.Equals(handle)) {
@@ -108,10 +102,7 @@ namespace FallShadow.Asset.Runtime {
                     Resources.UnloadAsset(cache.asset);
                 }
 
-                assetCaches[i] = assetCaches[assetCacheCount - 1];
-                assetCaches[assetCacheCount - 1] = default;
-                assetCacheCount--;
-                i--;
+                assetCachesConsumeAt(ref i);
             }
 
             handleManager.Free(handle);

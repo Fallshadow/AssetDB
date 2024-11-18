@@ -14,11 +14,11 @@ res/fonts/xiqueregular_ef1d440ff8a55416bb0a15e7c1e1605a.bundle
 	xiqueregular.ttf
 res/prefabs/fx_807dc05acbae8867019fc9c25ab9e727.bundle
 	fx_windarea.prefab
-res/scenes_f4149f45d2d42f00dca1bd48cf5effbb.bundle
+res/scenes_df265b159bf770862a580359d2bde586.bundle
 	entry.unity
 	login.unity
 	main.unity
 	main_level.unity
-res/scenes_f4149f45d2d42f00dca1bd48cf5effbb.deps
+res/scenes_df265b159bf770862a580359d2bde586.deps
 res/sprites/common_d260de79b3c3a877e419edf69945b32f.bundle
 	icon_load_null.jpg

@@ -231,6 +231,7 @@ namespace FallShadow.Asset.Runtime {
             }
 
             assetCaches[assetCacheCount++] = cache;
+            Debug.Log($"[AssetDB] »º´æ×ÊÔ´: {cache.url}");
         }
     }
 }

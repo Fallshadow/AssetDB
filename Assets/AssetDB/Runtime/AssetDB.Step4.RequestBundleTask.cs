@@ -70,6 +70,7 @@ namespace FallShadow.Asset.Runtime {
                 isRemoteAsset = IsMountRemoteBundle(bundleKey)
             };
 
+            Debug.Log($"[AssetDB] ½¨Á¢ Bundle Task: {bundleKey}");
             return true;
         }
     }

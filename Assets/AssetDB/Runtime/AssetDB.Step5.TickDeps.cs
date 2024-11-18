@@ -2,6 +2,7 @@ using FallShadow.Common;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Unity.Collections;
+using UnityEngine;
 using UnityEngine.Networking;
 
 namespace FallShadow.Asset.Runtime {
@@ -55,6 +56,7 @@ namespace FallShadow.Asset.Runtime {
 
                     var request = UnityWebRequest.Get(filePath);
                     task.webOperation = request.SendWebRequest();
+                    Debug.Log($"[AssetDB] 依赖详情请求: {filePath}");
                 }
 
                 // TODO：下载下来的内容似乎是一列列的依赖资源路径，具体是啥需要测试
@@ -100,6 +102,7 @@ namespace FallShadow.Asset.Runtime {
                         }
 
                         deps.Add(dep);
+                        Debug.Log($"[AssetDB] 依赖详情添加: {dep}");
                         cursor = i + 1;
                     }
                 }
