@@ -1,0 +1,19 @@
+{
+    "name": "FallShadow.Asset.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:b09edc9a01d99a74aa8112c9539be649",
+        "GUID:860530f6665126d438cd9e1519e36104"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

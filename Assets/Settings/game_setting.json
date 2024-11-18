@@ -1,0 +1,18 @@
+{
+    "versionName": "0.1.0",
+    "buildNum": 1,
+    "resNum": 1,
+    "runtimeNum": 1,
+    "serverHost": "",
+    "openDebugConsole": false,
+    "openWhiteList": false,
+    "whiteList": [],
+    "gameMaintenanceUrl": "",
+    "isWXSDKTokenLogin": false,
+    "isOpenGravitySDK": false,
+    "isOpenFunnyDBSDK": false,
+    "isAndroidOpenPaySDK": false,
+    "isIOSOpenPaySDK": false,
+    "isPCOpenPaySDK": false,
+    "envVersion": "develop"
+  }

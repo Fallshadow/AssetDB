@@ -11,14 +11,13 @@ public class ResHelper : MonoBehaviour {
     public static AssetDB db { get; internal set; }
     public static AssetDBAtlasSpriteLoader dbAtlasSpriteLoader { get; internal set; }
 
-    [SerializeField]
-    private RemoteConfig remoteConfig;
+    public RemoteConfig remoteConfig;
 
     private bool isInited = false;
     private string sandboxMountPath = $"{Application.dataPath}/../sandbox";
     private AssetDB.LoadMode loadMode {
 #if UNITY_EDITOR
-        get => PlayerPrefs.GetInt(AssetDBKey.AssetDatabasePrefKey) == 1 ? AssetDB.LoadMode.Editor : AssetDB.LoadMode.Runtime;
+        get => PlayerPrefs.GetInt("simulate_load_editor") == 1 ? AssetDB.LoadMode.Editor : AssetDB.LoadMode.Runtime;
 #else
         get => AssetDB.LoadMode.Runtime;
 #endif
@@ -75,8 +74,9 @@ public class ResHelper : MonoBehaviour {
 
 #if WECHAT && !UNITY_EDITOR
         db.SetSpecialDirectory($"{remoteConfig.remoteUrl}/StreamingAssets");
-        db.AddFilesTask($"{remoteConfig.remoteUrl}/StreamingAssets/files.txt");
+        db.AddFilesTask($"{remoteConfig.remoteUrl}/Version/{EntryMgr.instance.gameSetting.resNum}.txt");
         db.Mount($"{remoteConfig.remoteUrl}/StreamingAssets");
+        Debug.Log(EntryMgr.instance.gameSetting.resNum);
 #else
         db.AddFilesTask($"{sandboxMountPath}/files.txt");
         db.Mount(sandboxMountPath);

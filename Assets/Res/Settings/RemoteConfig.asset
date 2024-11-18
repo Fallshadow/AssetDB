@@ -12,4 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9abc884b4c8d1354c8f9d2b4d6e4fb7f, type: 3}
   m_Name: RemoteConfig
   m_EditorClassIdentifier: 
-  remoteUrl: 
+  remoteUrl: https://funny-iaa.funnyrpg.com/InfiniteTrain/TestAssetDB
+  settingUrl: https://funny-iaa.funnyrpg.com/InfiniteTrain/setting/gamesetting/assetdb/
