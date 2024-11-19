@@ -1,0 +1,4 @@
+[[bundle]]
+patterns = [
+    "**/*.prefab"
+]

@@ -16,13 +16,12 @@ public class GameMgr : MonoBehaviour {
 
 
     void Start() {
-
-        //List<string> urls = new List<string>() {
-
-        //    // ResKey.dmgTextTexture,
-        //    //"Prefabs/DropItem/DropItem"
-        //};
-        //ResHelper.Preload(urls, Init);
+        // 将各种 mgr 和 module 依赖的资源放到这里预加载，保证初始化的正确性。
+        List<string> urls = new List<string>() {
+            ResKey.uiContainer,
+        };
+        ResHelper.Preload(urls, Init);
+        DontDestroyOnLoad(this);
     }
 
     void Init() {
@@ -42,6 +41,7 @@ public class GameMgr : MonoBehaviour {
         }
 
         inited = true;
+        GameEvents.gameInited?.Invoke();
     }
 
     void Update() {
@@ -73,7 +73,7 @@ public class GameMgr : MonoBehaviour {
     }
 
     private void AddModules() {
-        //AddModule<BattleBulletModule>();
+        AddModule<ProgressModule>();
     }
 
     private void AddModule<T>() where T : ModuleBase, new() {

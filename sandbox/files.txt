@@ -1,4 +1,9 @@
-res/fonts/xiqueregular_ef1d440ff8a55416bb0a15e7c1e1605a.bundle
+res/fonts/xiqueregular/login_7d8daef0ffaef53e3c0b4c2c0b190c30.bundle
+	xiqueregular sdf.asset
+res/fonts/xiqueregular/login_7d8daef0ffaef53e3c0b4c2c0b190c30.deps
+res/fonts/xiqueregular/ori_b1bbc5198bd58c9daf753957dab5827e.bundle
+	xiqueregular.ttf
+res/fonts/xiqueregular_2a1193e0cc350fa2120d1a5134c9bd6b.bundle
 	xiqueregular sdf 1.asset
 	xiqueregular sdf 10.asset
 	xiqueregular sdf 11.asset
@@ -10,15 +15,19 @@ res/fonts/xiqueregular_ef1d440ff8a55416bb0a15e7c1e1605a.bundle
 	xiqueregular sdf 7.asset
 	xiqueregular sdf 8.asset
 	xiqueregular sdf 9.asset
-	xiqueregular sdf.asset
-	xiqueregular.ttf
+res/fonts/xiqueregular_2a1193e0cc350fa2120d1a5134c9bd6b.deps
 res/prefabs/fx_807dc05acbae8867019fc9c25ab9e727.bundle
 	fx_windarea.prefab
-res/scenes_df265b159bf770862a580359d2bde586.bundle
+res/prefabs/ui/coreui_6db2dc6c63578fcced546cff34697546.bundle
+	uicontainer.prefab
+res/prefabs/ui/loginui_399cce13d6d99ba7d2a0e8241d6d7574.bundle
+	loginui.prefab
+res/prefabs/ui/loginui_399cce13d6d99ba7d2a0e8241d6d7574.deps
+res/scenes_fee85f273b2566498e72a4202ca92293.bundle
 	entry.unity
 	login.unity
 	main.unity
 	main_level.unity
-res/scenes_df265b159bf770862a580359d2bde586.deps
+res/scenes_fee85f273b2566498e72a4202ca92293.deps
 res/sprites/common_d260de79b3c3a877e419edf69945b32f.bundle
 	icon_load_null.jpg

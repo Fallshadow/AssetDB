@@ -10,11 +10,11 @@ import checkVersion from './check-version';
 import { launchEventType, scaleMode } from './plugin-config';
 import { preloadWxCommonFont } from './unity-sdk/font/index';
 const managerConfig = {
-    DATA_FILE_MD5: 'fc8f11afaf019b60',
-    CODE_FILE_MD5: '18a7a2de89ccf8a3',
+    DATA_FILE_MD5: '95f0e62ce3483345',
+    CODE_FILE_MD5: 'cd521a870b8f9147',
     GAME_NAME: 'webgl',
     APPID: 'wx57e96a0b5b1af965',
-    DATA_FILE_SIZE: '7002982',
+    DATA_FILE_SIZE: '7006255',
     OPT_DATA_FILE_SIZE: '$OPT_DATA_FILE_SIZE',
     DATA_CDN: 'https://funny-iaa.funnyrpg.com/InfiniteTrain/TestAssetDB',
     // 资源包是否作为小游戏分包加载

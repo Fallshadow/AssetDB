@@ -230,7 +230,7 @@ public class EntryMgr : MonoBehaviour
         //    LoginMgr.instance.EnterGame();
         //});
 
-        ResHelper.db.LoadScene(ResKey.MainLevelScene, LoadSceneMode.Single);
+        ResHelper.db.LoadScene(ResKey.LoginScene, LoadSceneMode.Single);
 
         Debug.Log("[GameSetting] OnApplicationBasicInitComplete");
     }
