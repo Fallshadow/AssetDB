@@ -8,16 +8,17 @@ using UnityEngine;
 [RequireComponent(typeof(MeshRenderer))]
 [RequireComponent(typeof(MeshFilter))]
 public class MileSkinning : MonoBehaviour {
-    static MileSkinningManager mileSkinningManager = new MileSkinningManager();
 
-    [SerializeField] GPUSkinningAnimation gpuSkinningAnimation;
-    [SerializeField] Material material;
-    [SerializeField] Mesh mesh;
-    [SerializeField] TextAsset textAsset;
-    [SerializeField] int defaultPlayingClipIndex = 0;
-    [SerializeField] MileSkinningCullingMode mileSkinningCullingMode = MileSkinningCullingMode.CullUpdateTransforms;
+    private static MileSkinningManager mileSkinningManager = new MileSkinningManager();
 
-    MileSkinningPlayer player;
+    [SerializeField] private GPUSkinningAnimation gpuSkinningAnimation;
+    [SerializeField] private Material material;
+    [SerializeField] private Mesh mesh;
+    [SerializeField] private TextAsset textAsset;
+    [SerializeField] private int defaultPlayingClipIndex = 0;
+    [SerializeField] private MileSkinningCullingMode mileSkinningCullingMode = MileSkinningCullingMode.CullUpdateTransforms;
+
+    private MileSkinningPlayer player;
     public MileSkinningPlayer Player {
         get {
             return player;
@@ -28,6 +29,40 @@ public class MileSkinning : MonoBehaviour {
         Init();
 #if UNITY_EDITOR
         Update_Editor(0);
+#endif
+    }
+
+    private void Update() {
+        if (player != null) {
+#if UNITY_EDITOR
+            if (Application.isPlaying) {
+                player.Update(Time.deltaTime);
+            }
+            else {
+                player.Update_Editor(0);
+            }
+#else
+            player.Update(Time.deltaTime);
+#endif
+        }
+    }
+
+    private void OnDestroy() {
+        player = null;
+        gpuSkinningAnimation = null;
+        mesh = null;
+        material = null;
+        textAsset = null;
+
+        if (Application.isPlaying) {
+            mileSkinningManager.Unregister(this);
+        }
+
+#if UNITY_EDITOR
+        if (!Application.isPlaying) {
+            Resources.UnloadUnusedAssets();
+            UnityEditor.EditorUtility.UnloadUnusedAssetsImmediate();
+        }
 #endif
     }
 
@@ -59,12 +94,27 @@ public class MileSkinning : MonoBehaviour {
         }
     }
 
-
 #if UNITY_EDITOR
     public void Update_Editor(float deltaTime) {
         if (player != null && !Application.isPlaying) {
             player.Update_Editor(deltaTime);
         }
+    }
+
+    public void DeletePlayer() {
+        player = null;
+    }
+
+    public void Init(GPUSkinningAnimation anim, Mesh mesh, Material mtrl, TextAsset textureRawData) {
+        if (player != null) {
+            return;
+        }
+
+        this.gpuSkinningAnimation = anim;
+        this.mesh = mesh;
+        this.material = mtrl;
+        this.textAsset = textureRawData;
+        Init();
     }
 #endif
 }

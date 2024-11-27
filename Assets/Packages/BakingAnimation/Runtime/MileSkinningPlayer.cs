@@ -167,6 +167,24 @@ public class MileSkinningPlayer {
         if (currentClip.wrapMode == GPUSkinningWrapMode.Loop) {
             UpdateMaterial(timeDelta, currentMaterial);
         }
+        else if (currentClip.wrapMode == GPUSkinningWrapMode.Once) {
+            if (time >= currentClip.length) {
+                time = currentClip.length;
+                UpdateMaterial(timeDelta, currentMaterial);
+            }
+            else {
+                UpdateMaterial(timeDelta, currentMaterial);
+                time += timeDelta;
+                if (time > currentClip.length) {
+                    time = currentClip.length;
+                }
+            }
+        }
+        else {
+            throw new System.NotImplementedException();
+        }
+
+        lastPlayedTime += timeDelta;
     }
 
     void UpdateMaterial(float deltaTime, MileSkinningMaterial currentMaterial) {
@@ -188,6 +206,9 @@ public class MileSkinningPlayer {
         UpdateEvents(currentClip, frameIndex);
     }
 
+    private delegate void OnAnimEvent(MileSkinningPlayer player, int eventId);
+    private event OnAnimEvent onAnimEvent;
+
     void UpdateEvents(GPUSkinningClip clip, int frameIndex) {
         UpdateClipEvent(clip, frameIndex);
     }
@@ -195,6 +216,15 @@ public class MileSkinningPlayer {
     void UpdateClipEvent(GPUSkinningClip clip, int frameIndex) {
         if (clip == null || clip.events == null || clip.events.Length == 0) {
             return;
+        }
+
+        GPUSkinningAnimEvent[] events = clip.events;
+        int numEvents = events.Length;
+        for (int i = 0; i < numEvents; ++i) {
+            if (events[i].frameIndex == frameIndex && onAnimEvent != null) {
+                onAnimEvent(this, events[i].eventId);
+                break;
+            }
         }
     }
 

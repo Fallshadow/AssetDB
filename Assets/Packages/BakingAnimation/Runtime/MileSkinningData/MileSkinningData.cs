@@ -12,19 +12,15 @@ public class MileSkinningData {
     public Mesh mesh;
     public Texture2D texture2D;
 
-
     public List<MileSkinning> mileSkinnings = new List<MileSkinning>();
     private MileSkinningMaterial[] mileSkinningMaterials;
-
-
-
 
     private static int shaderPropID_GPUSkinning_TextureMatrix = -1;
     private static int shaderPropID_GPUSkinning_TextureSize_NumPixelsPerFrame = 0;
     private static int shaderPorpID_GPUSkinning_FrameIndex_PixelSegmentation = 0;
     private static int shaderPorpID_GPUSkinning_Extra_Property = 0;
 
-    public MileSkinningData() { 
+    public MileSkinningData() {
         if (shaderPropID_GPUSkinning_TextureMatrix == -1) {
             shaderPropID_GPUSkinning_TextureMatrix = Shader.PropertyToID("_GPUSkinning_TextureMatrix");
             shaderPropID_GPUSkinning_TextureSize_NumPixelsPerFrame = Shader.PropertyToID("_GPUSkinning_TextureSize_NumPixelsPerFrame");
@@ -55,6 +51,19 @@ public class MileSkinningData {
             cullingGroup.targetCamera = Camera.main;
             cullingGroup.SetDistanceReferencePoint(Camera.main.transform);
             cullingGroup.onStateChanged = OnLodCullingGroupOnStateChangedHandler;
+        }
+    }
+
+    public void RemoveCullingBounds(int index) {
+        cullingBounds.RemoveAt(index);
+        cullingGroup.SetBoundingSpheres(cullingBounds.buffer);
+        cullingGroup.SetBoundingSphereCount(mileSkinnings.Count);
+    }
+
+    void DestroyCullingGroup() {
+        if (cullingGroup != null) {
+            cullingGroup.Dispose();
+            cullingGroup = null;
         }
     }
 
@@ -123,5 +132,35 @@ public class MileSkinningData {
 
     public void UpdateExtraProperty(MaterialPropertyBlock materialPropertyBlock, Vector4 extraProp) {
         materialPropertyBlock.SetVector(shaderPorpID_GPUSkinning_Extra_Property, extraProp);
+    }
+
+    public void Destroy() {
+        gpuSkinningAnimation = null;
+        mesh = null;
+
+        if (cullingBounds != null) {
+            cullingBounds.Release();
+            cullingBounds = null;
+        }
+
+        DestroyCullingGroup();
+
+        if (mileSkinningMaterials != null) {
+            for (int i = 0; i < mileSkinningMaterials.Length; ++i) {
+                mileSkinningMaterials[i].Destroy();
+                mileSkinningMaterials[i] = null;
+            }
+            mileSkinningMaterials = null;
+        }
+
+        if (texture2D != null) {
+            Object.DestroyImmediate(texture2D);
+            texture2D = null;
+        }
+
+        if (mileSkinnings != null) {
+            mileSkinnings.Clear();
+            mileSkinnings = null;
+        }
     }
 }
